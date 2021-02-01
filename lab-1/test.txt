@@ -1,3 +1,0 @@
-User ID: 1000
-Group ID: 1000
-
