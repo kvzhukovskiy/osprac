@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+//В консоли необходимо вызывать параллельно с 05-52.out
 int main(){
   int fd;
   size_t size;
