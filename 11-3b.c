@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define LAST_MESSAGE 255 
 
@@ -14,10 +15,19 @@ int main(){
     float mess;
     int len, maxlen, i; 
 
-    struct mymsgbuf{ 
+    struct sendbuf{ 
         long mtype;
-	float info; 
-    } mybuf;
+	float mess; 
+    } sbuf;
+
+    struct getbuf{ 
+        long mtype;
+	struct{
+	    pid_t pid;
+	    float mess;	
+	} info;
+    } gbuf;
+
 
     if((key = ftok(pathname,0)) < 0){
         printf("Can\'t generate key\n");
@@ -30,40 +40,30 @@ int main(){
     } 
 
     while(1){
-        maxlen = sizeof(mybuf.info);
+        maxlen = sizeof(gbuf.info);
 
-        if(len = msgrcv(msqid, (struct msgbuf *) &mybuf, maxlen, 0, 0) < 0){
+        if(len = msgrcv(msqid, (struct msgbuf *) &gbuf, maxlen, 0, 0) < 0){
             printf("Can\'t receive message from queue\n");
             exit(-1);
         }
 
-	if(mybuf.mtype == LAST_MESSAGE){
+	if(gbuf.mtype == LAST_MESSAGE){
 	    printf("Killer programm have been executed, bye\n");
 	    exit(-1);
 	}
 	
-	if(mybuf.mtype == 2){
-	    printf("There are more then one server online\n");
-	    mess = mybuf.info;
-	    type = 2;
-	}else{
-	    printf("Server got number = %f\n", mybuf.info);
-            mess = mybuf.info * mybuf.info; 
-	}
+	printf("Server got number = %f, from client pid: %ld\n", gbuf.info.mess, 			gbuf.info.pid);
+        mess = gbuf.info.mess * gbuf.info.mess; 
 
-        mybuf.mtype = 2;
-        mybuf.info = mess;
-        len = sizeof(mybuf.info);
+        sbuf.mtype = gbuf.info.pid;
+        sbuf.mess = mess;
+        len = sizeof(sbuf.mess);
 
-        if (msgsnd(msqid, (struct msgbuf *) &mybuf, len, 0) < 0){
+        if (msgsnd(msqid, (struct msgbuf *) &sbuf, len, 0) < 0){
             printf("Can\'t send message to queue\n");
             msgctl(msqid, IPC_RMID, (struct msqid_ds *) NULL);
             exit(-1);
         }
-
-	if(type == 2){
-	    exit(-1);	
-	} 
    }
 
     	

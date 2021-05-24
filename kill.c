@@ -15,7 +15,10 @@ int main(){
 
     struct mymsgbuf{ 
         long mtype;
-	float info; 
+	struct{
+	    float mess; 
+	    pid_t pid;
+	}info;
     } mybuf;
 
     if((key = ftok(pathname,0)) < 0){
@@ -29,7 +32,7 @@ int main(){
     } 
 
     mybuf.mtype = LAST_MESSAGE;
-    mybuf.info = 1.0;
+    mybuf.info.mess = 1.0;
     len = sizeof(mybuf.info);
 
     if (msgsnd(msqid, (struct msgbuf *) &mybuf, len, 0) < 0){

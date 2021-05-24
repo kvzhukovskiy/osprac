@@ -4,14 +4,13 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define LAST_MESSAGE 255 
 
 //В программе 11-3а.с пользователь вводит число
 //Программа 11-3b.с представляет из себя сервер
-//При запуске нескольких серверов, дублирующие сервера будут прокидывать
-//Результат дальше, не меняя его, после чего завершать работу
-//Начальный же сервер будет работать до закрытия консоли или до 
+//Cервер будет работать до закрытия консоли или до 
 //Вызова программы kill, которая посылает сообщение с типом, используемым
 //Для завершения работы
 
@@ -21,10 +20,18 @@ int main(){
     key_t key; 
     int i, len, maxlen; 
 
-    struct mymsgbuf{ 
+    struct sendbuf{ 
         long mtype;
-	float info; 
-    } mybuf;
+	struct{
+	    pid_t pid;
+	    float mess;
+	} info;	 
+    } sbuf;
+
+    struct getbuf{ 
+        long mtype;
+	float mess;
+    } gbuf;    
 
     if((key = ftok(pathname,0)) < 0){
         printf("Can\'t generate key\n");
@@ -36,25 +43,25 @@ int main(){
         exit(-1);
     } 
 
-
-    mybuf.mtype = 1;
+    sbuf.info.pid = getpid();
+    sbuf.mtype = 1;
     printf("Input float number: ");
-    scanf("%f", &mybuf.info);
-    len = sizeof(mybuf.info);
+    scanf("%f", &sbuf.info.mess);
+    len = sizeof(sbuf.info);
 
-    if (msgsnd(msqid, (struct msgbuf *) &mybuf, len, 0) < 0){
+    if (msgsnd(msqid, (struct msgbuf *) &sbuf, len, 0) < 0){
         printf("Can\'t send message to queue\n");
         msgctl(msqid, IPC_RMID, (struct msqid_ds *) NULL);
         exit(-1);
     }
 
-    maxlen = sizeof(mybuf.info);
+    maxlen = sizeof(gbuf.mess);
 
-    if(len = msgrcv(msqid, (struct msgbuf *) &mybuf, maxlen, 2, 0) < 0){
+    if(len = msgrcv(msqid, (struct msgbuf *) &gbuf, maxlen, sbuf.info.pid, 0) < 0){
         printf("Can\'t receive message from queue\n");
         exit(-1);
     }
-    printf("Server answered result = %f\n", mybuf.info);	
+    printf("Server answered result = %f\n", gbuf.mess);	
         
     return 0;
 }
