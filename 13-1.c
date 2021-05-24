@@ -18,7 +18,7 @@ void move(char *path, int *len){
 
 void func(char *path, int len, int *count){
    int op;
-   char *next = malloc(sizeof(char) * (len + 1));
+   char *next = malloc(sizeof(char) * (len + 1)); //Выделяем память
 
    strcpy(next, path);
    move(next, &len);
