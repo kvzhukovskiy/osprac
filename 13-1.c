@@ -68,4 +68,5 @@ int main(){
 
     func("a", 1, &recCount);
     printf("Max Recursive Depth = %d\n", recCount);
+    return 0;
 }
