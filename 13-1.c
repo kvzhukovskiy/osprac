@@ -18,9 +18,10 @@ void move(char *path, int *len){
 
 void func(char *path, int len, int *count){
    int op;
-   char *next = malloc(sizeof(char) * (len + 1)); //Выделяем память
 
+   char *next = malloc(sizeof(char) * (len + 1));
    strcpy(next, path);
+
    move(next, &len);
 
    if(symlink(path, next) == -1){//Если не удается создать связь => выход
@@ -37,10 +38,10 @@ void func(char *path, int len, int *count){
 	return; //Выход из рекурсии
    }
 
-    if(close(op) < 0){
+   if(close(op) < 0){
 	printf("Can't close the file\n");
 	exit(-1);
-    }  
+   }  
 
    func(next, len, count);//Рекурсивный вызов
    
@@ -66,5 +67,5 @@ int main(){
     }
 
     func("a", 1, &recCount);
-    printf("Depth = %d\n", recCount);
+    printf("Max Recursive Depth = %d\n", recCount);
 }
